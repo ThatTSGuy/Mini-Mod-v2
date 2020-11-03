@@ -41,7 +41,10 @@ client.on('message', msg => {
                     });
                 });
             };
-        }
+        } else if (command == 'kill' && msg.member.hasPermission('MANAGE_MESSAGES')) {
+            console.log(`USER ${msg.author.tag} KILLED BOT`)
+            process.exit(0);
+        };
     } else {
         if (wordFilter.filter(msg.content) /*&& !msg.member.hasPermission('MANAGE_MESSAGES')*/) {
             msg.delete();
