@@ -138,7 +138,7 @@ client.on('message', msg => {
             filter.words.forEach(word => { if (msg.content.includes(word.text)) filtered = true });
             filter.phrases.forEach(phrase => { if (msg.content.includes(phrase.text)) filtered = true });
 
-            if (filtered /*&& !msg.member.hasPermission('MANAGE_MESSAGES')*/) {
+            if (filtered && !msg.member.hasPermission('MANAGE_MESSAGES')) {
                 msg.delete();
 
                 const embed = new Discord.MessageEmbed();
