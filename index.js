@@ -111,50 +111,50 @@ client.on('message', msg => {
                 });
             };
         } else if (command == 'purge' && msg.member.hasPermission('MANAGE_MESSAGES')) {
-    if (args[0] > 100) {
-        msg.delete();
-        msg.channel.send(`Can't delete more than 100 messages`).then(replyMsg => {
-            setTimeout(() => { replyMsg.delete() }, 3000);
-        });
-    } else {
-        msg.delete();
-        msg.channel.bulkDelete(((args[0]) ? args[0] : 20), true).then(messages => {
-            msg.channel.send(`Purged ${messages.size} messages`).then(replyMsg => {
-                setTimeout(() => { replyMsg.delete() }, 3000);
-            });
-        }).catch((err) => {
-            msg.channel.send(`Error purging`).then(replyMsg => {
-                setTimeout(() => { replyMsg.delete() }, 3000);
-            });
-        });
-    };
-} else if (command == 'kill' && msg.member.hasPermission('MANAGE_MESSAGES')) {
-    console.log(`USER ${msg.author.tag} KILLED BOT`)
-    process.exit(0);
-};
+            if (args[0] > 100) {
+                msg.delete();
+                msg.channel.send(`Can't delete more than 100 messages`).then(replyMsg => {
+                    setTimeout(() => { replyMsg.delete() }, 3000);
+                });
+            } else {
+                msg.delete();
+                msg.channel.bulkDelete(((args[0]) ? args[0] : 20), true).then(messages => {
+                    msg.channel.send(`Purged ${messages.size} messages`).then(replyMsg => {
+                        setTimeout(() => { replyMsg.delete() }, 3000);
+                    });
+                }).catch((err) => {
+                    msg.channel.send(`Error purging`).then(replyMsg => {
+                        setTimeout(() => { replyMsg.delete() }, 3000);
+                    });
+                });
+            };
+        } else if (command == 'kill' && msg.member.hasPermission('MANAGE_MESSAGES')) {
+            console.log(`USER ${msg.author.tag} KILLED BOT`)
+            process.exit(0);
+        };
     } else {
         let filtered = false;
         db.getFilter(msg.member.guild.id).then(filter => {
-            filter.words.forEach(word => { if(msg.content.includes(word.text)) filtered = true });
-            filter.phrases.forEach(phrase => { if(msg.content.includes(phrase.text)) filtered = true });
+            filter.words.forEach(word => { if (msg.content.includes(word.text)) filtered = true });
+            filter.phrases.forEach(phrase => { if (msg.content.includes(phrase.text)) filtered = true });
+
+            if (filtered /*&& !msg.member.hasPermission('MANAGE_MESSAGES')*/) {
+                msg.delete();
+
+                const embed = new Discord.MessageEmbed();
+                embed.setDescription(`<@${msg.author.id}>, please don\'t matchmake in this channel!`);
+                embed.setFooter('Pin\'s Mini-Mod v2', config.embedIcon)
+                embed.setColor('#db4444');
+
+                msg.channel.send(embed)
+                    .then(replyMsg => {
+                        setTimeout(() => {
+                            replyMsg.delete();
+                        }, 3000);
+                    });
+            };
         });
-    
-        if (filtered /*&& !msg.member.hasPermission('MANAGE_MESSAGES')*/) {
-        msg.delete();
-
-        const embed = new Discord.MessageEmbed();
-        embed.setDescription(`<@${msg.author.id}>, please don\'t matchmake in this channel!`);
-        embed.setFooter('Pin\'s Mini-Mod v2', config.embedIcon)
-        embed.setColor('#db4444');
-
-        msg.channel.send(embed)
-            .then(replyMsg => {
-                setTimeout(() => {
-                    replyMsg.delete();
-                }, 3000);
-            });
     };
-};
 });
 
 client.login(config.token);
