@@ -32,10 +32,11 @@ module.exports.newWord = (guildId, word) => {
             if (wordList.length > 0) {
                 res(true);
                 return;
+            } else {
+                wordCollection.insertOne({ 'text': word }, (err, result) => {
+                    res(err ? true : false);
+                });
             };
-        });
-        wordCollection.insertOne({ 'text': word }, (err, result) => {
-            res(err ? true : false);
         });
     });
 };
@@ -47,10 +48,11 @@ module.exports.newPhrase = (guildId, phrase) => {
             if (phraseList.length > 0) {
                 res(true);
                 return;
+            } else {
+                phraseCollection.insertOne({ 'text': phrase }, (err, result) => {
+                    res(err ? true : false);
+                });
             };
-        });
-        phraseCollection.insertOne({ 'text': phrase }, (err, result) => {
-            res(err ? true : false);
         });
     });
 };
