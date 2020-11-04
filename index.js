@@ -1,4 +1,3 @@
-const wordFilter = require('./filter/filter.js');
 const db = require('./dbdriver');
 const config = require('./config.json');
 const Discord = require('discord.js');
