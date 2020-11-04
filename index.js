@@ -136,8 +136,8 @@ client.on('message', msg => {
     } else {
         let filtered = false;
         db.getFilter(msg.member.guild.id).then(filter => {
-            filter.words.forEach(word => { if(msg.content.includes(word)) filtered = true });
-            filter.phrases.forEach(phrase => { if(msg.content.includes(phrase)) filtered = true });
+            filter.words.forEach(word => { if(msg.content.includes(word.text)) filtered = true });
+            filter.phrases.forEach(phrase => { if(msg.content.includes(phrase.text)) filtered = true });
         });
     
         if (filtered /*&& !msg.member.hasPermission('MANAGE_MESSAGES')*/) {
