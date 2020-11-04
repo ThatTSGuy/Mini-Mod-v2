@@ -28,7 +28,7 @@ module.exports.getFilter = guildId => {
 module.exports.newWord = (guildId, word) => {
     return new Promise((res, rej) => {
         wordCollection = client.db(guildId).collection('words');
-        wordCollection.find({}).toArray(function (err, wordList) {
+        wordCollection.find({'text': word}).toArray(function (err, wordList) {
             if (wordList.length > 0) res(true); 
         });
         wordCollection.insertOne({ 'text': word }, (err, result) => {
@@ -40,7 +40,7 @@ module.exports.newWord = (guildId, word) => {
 module.exports.newPhrase = (guildId, phrase) => {
     return new Promise((res, rej) => {
         phraseCollection = client.db(guildId).collection('phrases');
-        phraseCollection.find({}).toArray(function (err, phraseList) {
+        phraseCollection.find({'text': phrase}).toArray(function (err, phraseList) {
             if (phraseList.length > 0) res(true); 
         });
         phraseCollection.insertOne({ 'text': phrase }, (err, result) => {
