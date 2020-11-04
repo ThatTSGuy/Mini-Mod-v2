@@ -66,8 +66,3 @@ client.on('message', msg => {
 });
 
 client.login(config.token);
-
-//Server
-const server = http.createServer((req, res) => {
-    res.end('Hello World!');
-}).listen('8080');
