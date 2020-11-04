@@ -28,8 +28,11 @@ module.exports.getFilter = guildId => {
 module.exports.newWord = (guildId, word) => {
     return new Promise((res, rej) => {
         wordCollection = client.db(guildId).collection('words');
-        wordCollection.find({'text': word}).toArray(function (err, wordList) {
-            if (wordList.length > 0) res(true); 
+        wordCollection.find({ 'text': word }).toArray(function (err, wordList) {
+            if (wordList.length > 0) {
+                res(true);
+                return;
+            };
         });
         wordCollection.insertOne({ 'text': word }, (err, result) => {
             res(err ? true : false);
@@ -40,8 +43,11 @@ module.exports.newWord = (guildId, word) => {
 module.exports.newPhrase = (guildId, phrase) => {
     return new Promise((res, rej) => {
         phraseCollection = client.db(guildId).collection('phrases');
-        phraseCollection.find({'text': phrase}).toArray(function (err, phraseList) {
-            if (phraseList.length > 0) res(true); 
+        phraseCollection.find({ 'text': phrase }).toArray(function (err, phraseList) {
+            if (phraseList.length > 0) {
+                res(true);
+                return;
+            };
         });
         phraseCollection.insertOne({ 'text': phrase }, (err, result) => {
             res(err ? true : false);
