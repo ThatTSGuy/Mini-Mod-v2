@@ -1,4 +1,5 @@
 const wordFilter = require('./filter/filter.js');
+const http = require('http');
 const config = require('./config.json');
 const Discord = require('discord.js');
 const client = new Discord.Client;
@@ -65,3 +66,8 @@ client.on('message', msg => {
 });
 
 client.login(config.token);
+
+//Server
+const server = http.createServer((req, res) => {
+    res.end('Hello World!');
+}).listen('8080');
