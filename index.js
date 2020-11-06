@@ -1,8 +1,10 @@
 /* 
-Pins 'edit' 11/5/2020  
-Added outline for channel/category exceptions (maybe?)
-Need to check w/ Zooped if any setup/prereq. are required
+Pins 'edit' 11/6/2020  
+Added channel/category exceptions (maybe?)
+TODO:
 Add logchannel feature
+add checks for invalid channels and categories
+psuh to pins-edit branch of repo
 */
 
 const db = require('./dbdriver');
@@ -30,8 +32,10 @@ client.on('message', msg => {
 
             msg.channel.send(embed);
         } else if (command == 'filter' && msg.member.hasPermission('MANAGE_MESSAGES')) {
+            //change to an embed when i feel like it
             if (args[0]) {
                 if (args[0] == 'add') {
+                    if (args[1] === undefined) return msg.reply("invalid arguments!");
                     if (args.length < 3) {
                         db.newWord(msg.member.guild.id, args[1]).then(err => {
                             if (!err) {
@@ -63,6 +67,7 @@ client.on('message', msg => {
                         });
                     };
                 } else if (args[0] == 'remove') {
+                    if (args[1] === undefined) return msg.reply("invalid arguments!");
                     if (args.length < 3) {
                         db.deleteWord(msg.member.guild.id, args[1]).then(result => {
                             if (!result) {
@@ -108,7 +113,10 @@ client.on('message', msg => {
                     });
                     */
                     if (args[1] === 'add') {
+                    if (args[2] === undefined) return msg.reply("invalid arguments!");
                     db.newChannel(msg.member.guild.id, args[2]).then(err => {
+                        let checkchannel = msg.guild.channels.cache.get(args[2]);
+                        if (checkchannel === undefined) return msg.reply("invalid channel!");
                         if (!err) {
                             const embed = new Discord.MessageEmbed();
                             embed.setDescription(`✅ Channel <#${args[2]}> added as an exception`);
@@ -124,6 +132,7 @@ client.on('message', msg => {
                     
                 } else {
                     if (args[1] === 'remove') {
+                        if (args[2] === undefined) return msg.reply("invalid arguments!");
                         db.deleteChannel(msg.member.guild.id, args[2]).then(result => {
                             if (!result) {
                                 const embed = new Discord.MessageEmbed();
@@ -139,7 +148,57 @@ client.on('message', msg => {
                         });
                     }
                 }
+            } else if (args[0] === "category") {
+                /*
+                if (!(args[1] === 'add')) return msg.reply("invalid arguments!").then(replyMsg => {
+                    replyMsg.delete({ timeout: 5000 });
+                });
+                if (!(args[1] === 'remove')) return msg.reply("invalid arguments!").then(replyMsg => {
+                    replyMsg.delete({ timeout: 5000 });
+                });
+                */
+               /*
+                if (args[2] === undefined) return msg.reply("invalid channel!").then(replyMsg => {
+                    replyMsg.delete({ timeout: 5000 });
+                });
+                */
+                if (args[1] === 'add') {
+                if (args[2] === undefined) return msg.reply("invalid arguments!");
+                db.newCategory(msg.member.guild.id, args[2]).then(err => {
+                    // add code for category check
+                    //if (checkcategory === undefined) return msg.reply("invalid channel!");
+                    if (!err) {
+                        const embed = new Discord.MessageEmbed();
+                        embed.setDescription(`✅ Category <#${args[2]}> added as an exception`);
+                        embed.setColor(0x00ff1a);
+                        msg.channel.send(embed);
+                    } else {
+                        const embed = new Discord.MessageEmbed();
+                        embed.setDescription(`⛔ Category <#${args[2]}> is already an exception.`);
+                        embed.setColor(0xff1100);
+                        msg.channel.send(embed);
+                    };
+                });
+                
             } else {
+                if (args[1] === 'remove') {
+                    if (args[2] === undefined) return msg.reply("invalid arguments!");
+                    db.deleteCategory(msg.member.guild.id, args[2]).then(result => {
+                        if (!result) {
+                            const embed = new Discord.MessageEmbed();
+                            embed.setDescription('⛔ No matching category!');
+                            embed.setColor(0xff1100);
+                            msg.channel.send(embed);
+                        } else {
+                            const embed = new Discord.MessageEmbed();
+                            embed.setDescription(`✅ Category <#${args[2]}> deleted from exceptions`);
+                            embed.setColor(0x00ff1a);
+                            msg.channel.send(embed);
+                        };
+                    });
+                }
+            }
+        } else {
                     msg.channel.send(`Command invalid, correct usage is \`${config.prefix}filter (add/remove/*channel*) <word/phrase/*add*> [*channelID*]\``)
                 };
             } else {
@@ -147,20 +206,24 @@ client.on('message', msg => {
                     let words = '';
                     let phrases = '';
                     let channels = '';
+                    let categories = '';
 
                     filter.words.forEach(word => words += `\n${word.text}`);
                     filter.phrases.forEach(phrase => phrases += `\n${phrase.text}`);
                     filter.channels.forEach(channel => channels += `\n<#${channel.text}>`);
+                    filter.categories.forEach(category => categories += `\n<#${category.text}>`)
 
                     words = words == '' ? 'Empty' : words;
                     phrases = phrases == '' ? 'Empty' : phrases;
                     channels = channels == '' ? 'Empty' : channels;
+                    categories = categories == '' ? 'Empty' : categories;
 
                     const embed = new Discord.MessageEmbed();
                     embed.setTitle('Filter 🔇');
                     embed.addField('Words:', words);
                     embed.addField('Phrases:', phrases);
-                    embed.addField('Channels:', channels)
+                    embed.addField('Channels:', channels);
+                    embed.addField('Categories:', categories);
                     embed.setColor(0x4a54ed);
 
                     msg.channel.send(embed);
