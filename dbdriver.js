@@ -15,17 +15,20 @@ module.exports.getFilter = guildId => {
         phraseCollection = client.db(guildId).collection('phrases');
         channelCollection = client.db(guildId).collection(`channels`);
         categoryCollection = client.db(guildId).collection(`categories`);
-
+        roleCollection = client.db(guildId).collection(`roles`);
         wordCollection.find({}).toArray(function (err, wordList) {
             phraseCollection.find({}).toArray(function (err, phraseList) {
                 channelCollection.find({}).toArray(function (err, channelList) {
                     categoryCollection.find({}).toArray(function (err, categoryList) {
-                        if (err) throw err;
-                        res({
-                            words: wordList,
-                            phrases: phraseList,
-                            channels: channelList,
-                            categories: categoryList,
+                        roleCollection.find({}).toArray(function (err, roleList) {
+                            if (err) throw err;
+                            res({
+                                words: wordList,
+                                phrases: phraseList,
+                                channels: channelList,
+                                categories: categoryList,
+                                roles: roleList,
+                            });
                         });
                     });
                 });
@@ -101,6 +104,21 @@ module.exports.newCategory = (guildId, category) => {
     });
 };
 
+module.exports.newRole = (guildId, role) => {
+    return new Promise((res, rej) => {
+        roleCollection = client.db(guildId).collection('roles');
+        roleCollection.find({ 'text': role }).toArray(function (err, roleList) {
+            if (roleList.length > 0) {
+                res(true);
+                return;
+            } else {
+                roleCollection.insertOne({ 'text': role }, (err, result) => {
+                    res(err ? true : false);
+                });
+            };
+        });
+    });
+};
 
 module.exports.deleteWord = (guildId, word) => {
     return new Promise((res, rej) => {
@@ -139,4 +157,13 @@ module.exports.deleteCategory = (guildId, category) => {
             res(result.result.n ? true : false);
         });
     });
+};
+
+module.exports.deleteRole = (guildId, role) => {
+    return new Promise((res, rej) => {
+        roleCollection = client.db(guildId).collection('roles');
+        roleCollection.deleteOne({ 'text': role }, (err, result) => {
+            res(result.result.n ? true : false);
+        });
+    })
 };

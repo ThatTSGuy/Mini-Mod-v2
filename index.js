@@ -4,19 +4,30 @@ Added channel/category exceptions (maybe?)
 TODO:
 Add logchannel feature
 add checks for invalid channels and categories
-psuh to pins-edit branch of repo
+push to pins-edit branch of repo
+make sure checks stop the rest of code from executing or whatever
+
+Pins' edit 11/7
+Added role filter(s)
+Added debug command
+Cleaned up just a few things (not really lmao)
+To Do:
+clean up things for real
+make a better help command
+bug testing!!!
 */
 
 const db = require('./dbdriver');
 const config = require('./config.json');
 const Discord = require('discord.js');
 const client = new Discord.Client;
+const debug = new Set();
 
 client.once('ready', () => { console.log('Bot authed into Discord API, bot ready') });
 
 client.on('message', msg => {
     if (msg.author.bot) return;
-    console.log(`message: "${msg.content}" from "${msg.author.tag}" in channel "${msg.channel.name}" in server "${msg.guild}"`)
+    console.log(`Message: "${msg.content}" from "${msg.author.tag}" sent in channel "${msg.channel.name}" in server "${msg.guild}"`)
     if (msg.content.startsWith(config.prefix)) {
         const args = msg.content.slice(config.prefix.length).trim().split(/ +/);
         const command = args.shift().toLowerCase();
@@ -29,7 +40,6 @@ client.on('message', msg => {
             embed.setTitle('Pong! :ping_pong:');
             embed.addFields([apiPing, clientPing])
             embed.setColor(0x4287f5);
-
             msg.channel.send(embed);
         } else if (command == 'filter' && msg.member.hasPermission('MANAGE_MESSAGES')) {
             //change to an embed when i feel like it
@@ -129,7 +139,6 @@ client.on('message', msg => {
                             msg.channel.send(embed);
                         };
                     });
-                    
                 } else {
                     if (args[1] === 'remove') {
                         if (args[2] === undefined) return msg.reply("invalid arguments!");
@@ -163,8 +172,8 @@ client.on('message', msg => {
                 });
                 */
                 if (args[1] === 'add') {
-                if (args[2] === undefined) return msg.reply("invalid arguments!");
-                db.newCategory(msg.member.guild.id, args[2]).then(err => {
+                    if (args[2] === undefined) return msg.reply("invalid arguments!");
+                    db.newCategory(msg.member.guild.id, args[2]).then(err => {
                     // add code for category check
                     //if (checkcategory === undefined) return msg.reply("invalid channel!");
                     if (!err) {
@@ -198,6 +207,43 @@ client.on('message', msg => {
                     });
                 }
             }
+        } else if (args[0] === "role") {
+            if (args[1] === "add") {
+                if (args[2] === undefined) return msg.reply("invalid arguments!");
+                db.newRole(msg.member.guild.id, args[2]).then(err => {
+                    // add code for category check
+                    //if (checkcategory === undefined) return msg.reply("invalid channel!");
+                    if (!err) {
+                        const embed = new Discord.MessageEmbed();
+                        embed.setDescription(`✅ Role <@&${args[2]}> added as an exception`);
+                        embed.setColor(0x00ff1a);
+                        msg.channel.send(embed);
+                    } else {
+                        const embed = new Discord.MessageEmbed();
+                        embed.setDescription(`⛔ Role <@&${args[2]}> is already an exception.`);
+                        embed.setColor(0xff1100);
+                        msg.channel.send(embed);
+                    };
+                });
+            } else 
+            if (args[1] === "remove") {
+                if (args[2] === undefined) return msg.reply("invalid arguments!");
+                db.deleteRole(msg.member.guild.id, args[2]).then(result => {
+                    if (!result) {
+                        const embed = new Discord.MessageEmbed();
+                        embed.setDescription('⛔ No matching role!');
+                        embed.setColor(0xff1100);
+                        msg.channel.send(embed);
+                    } else {
+                        const embed = new Discord.MessageEmbed();
+                        embed.setDescription(`✅ Role <@&${args[2]}> deleted from exceptions`);
+                        embed.setColor(0x00ff1a);
+                        msg.channel.send(embed);
+                    };
+                });
+            } else {
+                msg.channel.send(`Incorrent command usage. Use the \'${config.prefix}help\` command for help.`)
+            }
         } else {
                     msg.channel.send(`Command invalid, correct usage is \`${config.prefix}filter (add/remove/*channel*) <word/phrase/*add*> [*channelID*]\``)
                 };
@@ -207,16 +253,19 @@ client.on('message', msg => {
                     let phrases = '';
                     let channels = '';
                     let categories = '';
+                    let roles = '';
 
                     filter.words.forEach(word => words += `\n${word.text}`);
                     filter.phrases.forEach(phrase => phrases += `\n${phrase.text}`);
                     filter.channels.forEach(channel => channels += `\n<#${channel.text}>`);
                     filter.categories.forEach(category => categories += `\n<#${category.text}>`)
+                    filter.roles.forEach(role => roles += `\n<@&${role.text}>`)
 
                     words = words == '' ? 'Empty' : words;
                     phrases = phrases == '' ? 'Empty' : phrases;
                     channels = channels == '' ? 'Empty' : channels;
                     categories = categories == '' ? 'Empty' : categories;
+                    roles = roles == '' ? 'Empty' : roles;
 
                     const embed = new Discord.MessageEmbed();
                     embed.setTitle('Filter 🔇');
@@ -224,6 +273,7 @@ client.on('message', msg => {
                     embed.addField('Phrases:', phrases);
                     embed.addField('Channels:', channels);
                     embed.addField('Categories:', categories);
+                    embed.addField(`Roles:`, roles);
                     embed.setColor(0x4a54ed);
 
                     msg.channel.send(embed);
@@ -258,8 +308,16 @@ client.on('message', msg => {
                 hm.setTimestamp(Date.now());
                 hm.setColor(`#fad609`)
             msg.channel.send(hm)
+        } else if (command === `debug`) {
+            if(debug.has(msg.author.id)) {
+                msg.reply("you've left debug mode!")
+                debug.delete(msg.author.id)
+            } else
+            if (!debug.has(msg.author.id)) {
+            debug.add(msg.author.id)
+            msg.reply("you've entered debug mode. Run the command again to exit.")
+            }
         }
-
     } else {
         let filtered = false;
         let channel = msg.guild.channels.cache.get(msg.channel.id);
@@ -268,15 +326,18 @@ client.on('message', msg => {
             filter.phrases.forEach(phrase => { if (msg.content.includes(phrase.text)) filtered = true });
             filter.channels.forEach(channel => { if (msg.channel.id.includes(channel.text)) filtered = false });
             filter.categories.forEach(category => { if (channel.parentID.includes(category.text)) filtered = false });
-            if (filtered /*&& !msg.member.hasPermission('MANAGE_MESSAGES')*/) {
+            filter.roles.forEach(role => { if (msg.member.roles.cache.has(role.text) && !debug.has(msg.author.id)) filtered = false });
+            if (filtered) {
                 msg.delete();
                 console.log(`Message sent by ${msg.member.displayName} deleted in ${msg.channel.name}.\nMessage content:\n${msg.content}`)
+                /*
                 const embed = new Discord.MessageEmbed();
                 embed.setDescription(`<@${msg.author.id}>, please don\'t matchmake in this channel!`);
                 embed.setFooter('Pin\'s Mini-Mod v2', config.embedIcon)
                 embed.setColor('#db4444');
-
-                msg.channel.send(embed)
+                */
+               let response = `<@${msg.author.id}>, please don't matchmake in this channel!` 
+                msg.channel.send(response)
                     .then(replyMsg => {
                         setTimeout(() => {
                             replyMsg.delete();
