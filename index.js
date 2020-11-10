@@ -22,69 +22,75 @@ client.on('message', msg => {
             embed.setColor(0x4287f5);
 
             msg.channel.send(embed);
-        } else if (command == 'filter' && msg.member.hasPermission('MANAGE_MESSAGES')) {
-            if (args[0]) {
-                if (args[0] == 'add') {
-                    if (['word', 'phrase'].includes(args[1])) {
-                        let text = args.slice(2).join(' ');
-                        db.newFilter(msg.member.guild.id, args[1], text);
+        } else if (command == 'add' && msg.member.hasPermission('MANAGE_MESSAGES')) {
+            //Checks to make sure there are arguments present and makes sure the type of filter is on of the four  
+            if (args[0] && args[1] && ['word', 'phrase', 'role', 'channel'].includes(args[1])) {
+                //Makes sure the type of filter is on of the four    
+                let text = args.slice(2).join(' ');
+                db.newFilter(msg.member.guild.id, args[1], text).then(err => {
+                    if (err) {
+                        const embed = new Discord.MessageEmbed();
+                        embed.setDescription(`⛔ The ${args[1]}, "${text}" is already in the filter`);
+                        embed.setColor(0xff1100);
+                        msg.channel.send(embed);
                     } else {
-                        msg.channel.send(`Command invalid, correct usage is \`!pins filter (add/remove) word/phrase\``)
+                        const embed = new Discord.MessageEmbed();
+                        embed.setDescription(`✅ The ${args[1]}, "${text}" has been added to the filter`);
+                        embed.setColor(0x00ff1a);
+                        msg.channel.send(embed);
                     };
-                } else if (args[0] == 'remove') {
-                    if (args.length < 3) {
-                        db.deleteWord(msg.member.guild.id, args[1]).then(result => {
-                            if (!result) {
-                                const embed = new Discord.MessageEmbed();
-                                embed.setDescription('⛔ No matching word');
-                                embed.setColor(0xff1100);
-                                msg.channel.send(embed);
-                            } else {
-                                const embed = new Discord.MessageEmbed();
-                                embed.setDescription(`✅ Word "${args[1]}" deleted from filter`);
-                                embed.setColor(0x00ff1a);
-                                msg.channel.send(embed);
-                            };
-                        });
-                    } else {
-                        let phrase = args.slice(1).join(' ');
-                        db.deletePhrase(msg.member.guild.id, phrase).then(result => {
-                            if (!result) {
-                                const embed = new Discord.MessageEmbed();
-                                embed.setDescription('⛔ No matching phrase');
-                                embed.setColor(0xff1100);
-                                msg.channel.send(embed);
-                            } else {
-                                const embed = new Discord.MessageEmbed();
-                                embed.setDescription(`✅ Phrase "${phrase}" deleted from filter`);
-                                embed.setColor(0x00ff1a);
-                                msg.channel.send(embed);
-                            };
-                        });
-                    };
-                } else {
-                    msg.channel.send(`Command invalid, correct usage is \`!pins filter (add/remove) word/phrase\``)
-                };
-            } else {
-                db.getFilter(msg.member.guild.id).then(filter => {
-                    let words = '';
-                    let phrases = '';
-
-                    filter.words.forEach(word => words += `\n${word.text}`);
-                    filter.phrases.forEach(phrase => phrases += `\n${phrase.text}`);
-
-                    words = words == '' ? 'Empty' : words;
-                    phrases = phrases == '' ? 'Empty' : phrases
-
-                    const embed = new Discord.MessageEmbed();
-                    embed.setTitle('Filter 🔇');
-                    embed.addField('Words:', words);
-                    embed.addField('Phrases:', phrases);
-                    embed.setColor(0x4a54ed);
-
-                    msg.channel.send(embed);
                 });
+            } else {
+                msg.channel.send(`Command invalid, correct usage is \`!p filter <add/remove> <word/phrase/role/channel> <text to filter>\``);
             };
+        } else if (command == 'remove' && msg.member.hasPermission('MANAGE_MESSAGES')) {
+            //Checks to make sure there are arguments present and makes sure the type of filter is on of the four  
+            if (args[0] && args[1] && ['word', 'phrase', 'role', 'channel'].includes(args[1])) {
+                //Makes sure the type of filter is on of the four    
+                let text = args.slice(2).join(' ');
+                db.removeFilter(msg.member.guild.id, args[1], text).then(err => {
+                    if (err) {
+                        const embed = new Discord.MessageEmbed();
+                        embed.setDescription(`⛔ The ${args[1]}, "${text}" is not in the filter`);
+                        embed.setColor(0xff1100);
+                        msg.channel.send(embed);
+                    } else {
+                        const embed = new Discord.MessageEmbed();
+                        embed.setDescription(`✅ The ${args[1]}, "${text}" has been removed from the filter`);
+                        embed.setColor(0x00ff1a);
+                        msg.channel.send(embed);
+                    };
+                });
+            } else {
+                msg.channel.send(`Command invalid, correct usage is \`!p filter <add/remove> <word/phrase/role/channel> <text to filter>\``);
+            };
+        } else if (command == 'list' && msg.member.hasPermission('MANAGE_MESSAGES')) {
+            db.getFilter(msg.member.guild.id).then(filter => {
+                let words = '';
+                let phrases = '';
+                let roles = '';
+                let channels = '';
+
+                //Go throught each filter entry and add it to a text based list to display it
+                filter.words.forEach(word => words += `\n${word.text}`);
+                filter.phrases.forEach(phrase => phrases += `\n${phrase.text}`);
+                filter.roles.forEach(role => roles += `\n${role.text}`);
+                filter.channels.forEach(channel => channels += `\n${channel.text}`);
+
+                //If filters are empty, set text to "Empty"
+                words = words == '' ? 'Empty' : words;
+                phrases = phrases == '' ? 'Empty' : phrases
+                roles = roles == '' ? 'Empty' : roles;
+                channels = channels == '' ? 'Empty' : channels
+
+                const embed = new Discord.MessageEmbed();
+                embed.setTitle('Filter 🔇');
+                embed.addField('Words:', words);
+                embed.addField('Phrases:', phrases);
+                embed.setColor(0x4a54ed);
+
+                msg.channel.send(embed);
+            });
         } else if (command == 'purge' && msg.member.hasPermission('MANAGE_MESSAGES')) {
             if (args[0] > 100) {
                 msg.delete();
