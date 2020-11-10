@@ -25,6 +25,22 @@ module.exports.getFilter = guildId => {
     });
 };
 
+module.exports.newFilter = (guildId, type, text) => {
+    return new Promise((res, rej) => {
+        collection = client.db(guildId).collection(type);
+        collection.find({ 'text': text }).toArray(function (err, list) {
+            if (list.length > 0) {
+                res(true);
+                return;
+            } else {
+                collection.insertOne({ 'text': text }, (err, result) => {
+                    res(err ? true : false);
+                });
+            };
+        });
+    });
+};
+
 module.exports.newWord = (guildId, word) => {
     return new Promise((res, rej) => {
         wordCollection = client.db(guildId).collection('words');
@@ -42,6 +58,38 @@ module.exports.newWord = (guildId, word) => {
 };
 
 module.exports.newPhrase = (guildId, phrase) => {
+    return new Promise((res, rej) => {
+        phraseCollection = client.db(guildId).collection('phrases');
+        phraseCollection.find({ 'text': phrase }).toArray(function (err, phraseList) {
+            if (phraseList.length > 0) {
+                res(true);
+                return;
+            } else {
+                phraseCollection.insertOne({ 'text': phrase }, (err, result) => {
+                    res(err ? true : false);
+                });
+            };
+        });
+    });
+};
+
+module.exports.newRoleExeption = (guildId, roleExeption) => {
+    return new Promise((res, rej) => {
+        roleExeptionCollection = client.db(guildId).collection('roleExeptions');
+        roleExeptionCollection.find({ 'text': roleExeption }).toArray(function (err, roleExeptionList) {
+            if (roleExeptionList.length > 0) {
+                res(true);
+                return;
+            } else {
+                roleExeptionCollection.insertOne({ 'text': roleExeption }, (err, result) => {
+                    res(err ? true : false);
+                });
+            };
+        });
+    });
+};
+
+module.exports.newRoleExeption = (guildId, phrase) => {
     return new Promise((res, rej) => {
         phraseCollection = client.db(guildId).collection('phrases');
         phraseCollection.find({ 'text': phrase }).toArray(function (err, phraseList) {

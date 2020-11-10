@@ -2,7 +2,6 @@ const db = require('./dbdriver');
 const config = require('./config.json');
 const Discord = require('discord.js');
 const client = new Discord.Client;
-
 client.once('ready', () => { console.log('Bot authed into Discord API, bot ready') });
 
 client.on('message', msg => {
@@ -26,35 +25,11 @@ client.on('message', msg => {
         } else if (command == 'filter' && msg.member.hasPermission('MANAGE_MESSAGES')) {
             if (args[0]) {
                 if (args[0] == 'add') {
-                    if (args.length < 3) {
-                        db.newWord(msg.member.guild.id, args[1]).then(err => {
-                            if (!err) {
-                                const embed = new Discord.MessageEmbed();
-                                embed.setDescription(`✅ Word "${args[1]}" added to filter`);
-                                embed.setColor(0x00ff1a);
-                                msg.channel.send(embed);
-                            } else {
-                                const embed = new Discord.MessageEmbed();
-                                embed.setDescription(`⛔ Word "${args[1]}" already in filter`);
-                                embed.setColor(0xff1100);
-                                msg.channel.send(embed);
-                            };
-                        });
+                    if (['word', 'phrase'].includes(args[1])) {
+                        let text = args.slice(2).join(' ');
+                        db.newFilter(msg.member.guild.id, args[1], text);
                     } else {
-                        let phrase = args.slice(1).join(' ');
-                        db.newPhrase(msg.member.guild.id, phrase).then(err => {
-                            if (!err) {
-                                const embed = new Discord.MessageEmbed();
-                                embed.setDescription(`✅ Phrase "${phrase}" added to filter`);
-                                embed.setColor(0x00ff1a);
-                                msg.channel.send(embed);
-                            } else {
-                                const embed = new Discord.MessageEmbed();
-                                embed.setDescription(`⛔ Phrase "${phrase}" already in filter`);
-                                embed.setColor(0xff1100);
-                                msg.channel.send(embed);
-                            };
-                        });
+                        msg.channel.send(`Command invalid, correct usage is \`!pins filter (add/remove) word/phrase\``)
                     };
                 } else if (args[0] == 'remove') {
                     if (args.length < 3) {
