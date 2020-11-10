@@ -12,13 +12,21 @@ module.exports.getFilter = guildId => {
     return new Promise((res, rej) => {
         wordCollection = client.db(guildId).collection('words');
         phraseCollection = client.db(guildId).collection('phrases');
+        roleCollection = client.db(guildId).collection('roles');
+        channelCollection = client.db(guildId).collection('channels');
 
         wordCollection.find({}).toArray(function (err, wordList) {
             phraseCollection.find({}).toArray(function (err, phraseList) {
-                if (err) throw err;
-                res({
-                    words: wordList,
-                    phrases: phraseList,
+                roleCollection.find({}).toArray(function (err, roleList) {
+                    channelCollection.find({}).toArray(function (err, channelList) {
+                        if (err) throw err;
+                        res({
+                            words: wordList,
+                            phrases: phraseList,
+                            roles: roleList,
+                            channels: channelList,
+                        });
+                    });
                 });
             });
         });
@@ -45,7 +53,7 @@ module.exports.removeFilter = (guildId, type, text) => {
     return new Promise((res, rej) => {
         collection = client.db(guildId).collection(type + 's');
         collection.deleteOne({ 'text': text }, (err, result) => {
-            res(result.result.n ? true : false);
+            res(result.result.n ? false : true);
         });
     })
 };

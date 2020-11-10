@@ -24,45 +24,89 @@ client.on('message', msg => {
             msg.channel.send(embed);
         } else if (command == 'add' && msg.member.hasPermission('MANAGE_MESSAGES')) {
             //Checks to make sure there are arguments present and makes sure the type of filter is on of the four  
-            if (args[0] && args[1] && ['word', 'phrase', 'role', 'channel'].includes(args[1])) {
+            if (['word', 'phrase', 'role', 'channel'].includes(args[0])) {
                 //Makes sure the type of filter is on of the four    
-                let text = args.slice(2).join(' ');
-                db.newFilter(msg.member.guild.id, args[1], text).then(err => {
-                    if (err) {
-                        const embed = new Discord.MessageEmbed();
-                        embed.setDescription(`⛔ The ${args[1]}, "${text}" is already in the filter`);
-                        embed.setColor(0xff1100);
-                        msg.channel.send(embed);
-                    } else {
-                        const embed = new Discord.MessageEmbed();
-                        embed.setDescription(`✅ The ${args[1]}, "${text}" has been added to the filter`);
-                        embed.setColor(0x00ff1a);
-                        msg.channel.send(embed);
+                let text = args.slice(1).join(' ').trim();
+                if (text == '') {
+                    const embed = new Discord.MessageEmbed();
+                            embed.setDescription(`⛔ The ${args[0]} can't be empty`);
+                            embed.setColor(0xff1100);
+                            msg.channel.send(embed);
+                } else {
+                    if (args[0] == 'role') {
+                        //Make sure the role is in role-id format not <@&id-here> format and that it is a valid role
+                        if (text.startsWith('<@&')) text = text.slice(3, -1);
+                        if (isNaN(text) || !msg.member.guild.roles.cache.has(text)) {
+                            const embed = new Discord.MessageEmbed();
+                            embed.setDescription(`⛔ The ${args[0]}, "${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : text}" is not a valid`);
+                            embed.setColor(0xff1100);
+                            msg.channel.send(embed);
+                            
+                            return;
+                        };
+                    } else if (args[0] == 'channel') {
+
                     };
-                });
+
+                    db.newFilter(msg.member.guild.id, args[0], text).then(err => {
+                        if (err) {
+                            const embed = new Discord.MessageEmbed();
+                            embed.setDescription(`⛔ The ${args[0]}, "${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : text}" is already in the filter`);
+                            embed.setColor(0xff1100);
+                            msg.channel.send(embed);
+                        } else {
+                            const embed = new Discord.MessageEmbed();
+                            embed.setDescription(`✅ The ${args[0]}, "${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : text}" has been added to the filter`);
+                            embed.setColor(0x00ff1a);
+                            msg.channel.send(embed);
+                        };
+                    });
+                };
             } else {
-                msg.channel.send(`Command invalid, correct usage is \`!p filter <add/remove> <word/phrase/role/channel> <text to filter>\``);
+                msg.channel.send(`Command invalid, correct usage is \`f!add <word/phrase/role/channel> <text to filter>\``);
             };
         } else if (command == 'remove' && msg.member.hasPermission('MANAGE_MESSAGES')) {
             //Checks to make sure there are arguments present and makes sure the type of filter is on of the four  
-            if (args[0] && args[1] && ['word', 'phrase', 'role', 'channel'].includes(args[1])) {
+            if (['word', 'phrase', 'role', 'channel'].includes(args[0])) {
                 //Makes sure the type of filter is on of the four    
-                let text = args.slice(2).join(' ');
-                db.removeFilter(msg.member.guild.id, args[1], text).then(err => {
+                let text = args.slice(1).join(' ').trim();
+                if (text == '') {
+                    const embed = new Discord.MessageEmbed();
+                            embed.setDescription(`⛔ The ${args[0]} can't be empty`);
+                            embed.setColor(0xff1100);
+                            msg.channel.send(embed);
+                } else {
+                    if (args[0] == 'role') {
+                        //Make sure the role is in role-id format not <@&id-here> format and that it is a valid role
+                        if (text.startsWith('<@&')) text = text.slice(3, -1);
+                        if (isNaN(text) || !msg.member.guild.roles.cache.has(text)) {
+                            const embed = new Discord.MessageEmbed();
+                            embed.setDescription(`⛔ The ${args[0]}, "${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : text}" is not a valid`);
+                            embed.setColor(0xff1100);
+                            msg.channel.send(embed);
+                            
+                            return;
+                        };
+                    } else if (args[0] == 'channel') {
+
+                    };
+                
+                    db.removeFilter(msg.member.guild.id, args[0], text).then(err => {
                     if (err) {
                         const embed = new Discord.MessageEmbed();
-                        embed.setDescription(`⛔ The ${args[1]}, "${text}" is not in the filter`);
+                        embed.setDescription(`⛔ The ${args[0]}, "${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : text}" is not in the filter`);
                         embed.setColor(0xff1100);
                         msg.channel.send(embed);
                     } else {
                         const embed = new Discord.MessageEmbed();
-                        embed.setDescription(`✅ The ${args[1]}, "${text}" has been removed from the filter`);
+                        embed.setDescription(`✅ The ${args[0]}, "${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : text}" has been removed from the filter`);
                         embed.setColor(0x00ff1a);
                         msg.channel.send(embed);
                     };
                 });
+            };
             } else {
-                msg.channel.send(`Command invalid, correct usage is \`!p filter <add/remove> <word/phrase/role/channel> <text to filter>\``);
+                msg.channel.send(`Command invalid, correct usage is \`f!remove <word/phrase/role/channel> <text to filter>\``);
             };
         } else if (command == 'list' && msg.member.hasPermission('MANAGE_MESSAGES')) {
             db.getFilter(msg.member.guild.id).then(filter => {
@@ -74,8 +118,8 @@ client.on('message', msg => {
                 //Go throught each filter entry and add it to a text based list to display it
                 filter.words.forEach(word => words += `\n${word.text}`);
                 filter.phrases.forEach(phrase => phrases += `\n${phrase.text}`);
-                filter.roles.forEach(role => roles += `\n${role.text}`);
-                filter.channels.forEach(channel => channels += `\n${channel.text}`);
+                filter.roles.forEach(role => roles += `\n<@&${role.text}>`);
+                filter.channels.forEach(channel => channels += `\n<#${channel.text}>`);
 
                 //If filters are empty, set text to "Empty"
                 words = words == '' ? 'Empty' : words;
@@ -84,9 +128,11 @@ client.on('message', msg => {
                 channels = channels == '' ? 'Empty' : channels
 
                 const embed = new Discord.MessageEmbed();
-                embed.setTitle('Filter 🔇');
+                embed.setTitle('🔇 Filter');
                 embed.addField('Words:', words);
                 embed.addField('Phrases:', phrases);
+                embed.addField('Role Exeptions:', roles);
+                embed.addField('Channel Exeptions:', channels);
                 embed.setColor(0x4a54ed);
 
                 msg.channel.send(embed);
