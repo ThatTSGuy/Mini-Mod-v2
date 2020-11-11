@@ -8,6 +8,8 @@ client.on('message', msg => {
     //console.log(`message: "${msg.content}" from "${msg.author.tag}" in channel "${msg.channel.name}" in server "${msg.guild}"`) Debug stuff (pls no deletey)
     if (msg.author.bot) return;
 
+    msg.content.toLowerCase();
+
     if (msg.content.startsWith(config.prefix)) {
         const args = msg.content.slice(config.prefix.length).trim().split(/ +/);
         const command = args.shift().toLowerCase();
@@ -26,8 +28,8 @@ client.on('message', msg => {
             embed.setTitle('📰 List of Commands');
             embed.addField('ping', 'Pings the bot and returns the ping\n`f!ping`');
             embed.addField('list', 'Lists all entrys in filter\n`f!list`');
-            embed.addField('add', 'Adds a filter entry\n`f!add <filter/role/channel> <text/role/channel to be filtered`');
-            embed.addField('remove', 'Removes a filter entry\n`f!add <filter/role/channel> <text/role/channel to be filtered`');
+            embed.addField('add', 'Adds a filter entry\n`f!add <filter/role/channel> <text/role/channel to be filtered>`');
+            embed.addField('remove', 'Removes a filter entry\n`f!remove <filter/role/channel> <text/role/channel to be filtered>`');
             embed.addField('purge', 'Bulk deletes messages\n`f!purge <amount to delete>`');
             embed.addField('kill', '**Only use in emergencies**\nKills all bot processes, and restart\n`f!kill`');
             embed.setFooter('Pin\'s Mini-Mod v2', config.embedIcon)
@@ -82,7 +84,7 @@ client.on('message', msg => {
                     });
                 };
             } else {
-                msg.channel.send(`Command invalid, correct usage is \`f!add <filter/role/channel> <text or role to filter>\``);
+                msg.channel.send(`Command invalid, correct usage is \`f!add <filter/role/channel> <text/role/channel to be filtered>\``);
             };
         } else if (command == 'remove' && msg.member.roles.cache.find(role => role.name == 'Bot Master')) {
             //Checks to make sure there are arguments present and makes sure the type of filter is on of the four  
@@ -121,7 +123,7 @@ client.on('message', msg => {
                     db.removeFilter(msg.member.guild.id, args[0], text).then(err => {
                     if (err) {
                         const embed = new Discord.MessageEmbed();
-                        embed.setDescription(`⛔ The ${args[0]}, "${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : `"${text}"`} is not in the filter`);
+                        embed.setDescription(`⛔ The ${args[0]}, ${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : `"${text}"`} is not in the filter`);
                         embed.setColor(0xff1100);
                         msg.channel.send(embed);
                     } else {
@@ -133,7 +135,7 @@ client.on('message', msg => {
                 });
             };
             } else {
-                msg.channel.send(`Command invalid, correct usage is \`f!remove <filter/role/channel> <text or role to filter>\``);
+                msg.channel.send(`Command invalid, correct usage is \`f!remove <filter/role/channel> <text/role/channel to be filtered>\``);
             };
         } else if (command == 'list' && msg.member.roles.cache.find(role => role.name == 'Bot Master')) {
             db.getFilter(msg.member.guild.id).then(filter => {
