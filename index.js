@@ -107,7 +107,15 @@ client.on('message', msg => {
                             return;
                         };
                     } else if (args[0] == 'channel') {
-
+                        if (text.startsWith('<#')) text = text.slice(2, -1);
+                        if (isNaN(text) || !msg.member.guild.channels.cache.has(text)) {
+                            const embed = new Discord.MessageEmbed();
+                            embed.setDescription(`⛔ The channel <#${text}> is not valid`);
+                            embed.setColor(0xff1100);
+                            msg.channel.send(embed);
+                            
+                            return;
+                        };
                     };
                 
                     db.removeFilter(msg.member.guild.id, args[0], text).then(err => {
