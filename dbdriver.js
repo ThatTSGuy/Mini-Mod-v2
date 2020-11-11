@@ -10,22 +10,20 @@ client.connect(err => {
 
 module.exports.getFilter = guildId => {
     return new Promise((res, rej) => {
-        wordCollection = client.db(guildId).collection('words');
-        phraseCollection = client.db(guildId).collection('phrases');
+        filterCollection = client.db(guildId).collection('filters');
         roleCollection = client.db(guildId).collection('roles');
         channelCollection = client.db(guildId).collection('channels');
 
-        wordCollection.find({}).toArray(function (err, wordList) {
-            phraseCollection.find({}).toArray(function (err, phraseList) {
-                roleCollection.find({}).toArray(function (err, roleList) {
-                    channelCollection.find({}).toArray(function (err, channelList) {
-                        if (err) throw err;
-                        res({
-                            words: wordList,
-                            phrases: phraseList,
-                            roles: roleList,
-                            channels: channelList,
-                        });
+        filterCollection.find({}).toArray(function (err, filterList) {
+            if (err) throw err;
+            roleCollection.find({}).toArray(function (err, roleList) {
+                if (err) throw err;
+                channelCollection.find({}).toArray(function (err, channelList) {
+                    if (err) throw err;
+                    res({
+                        filters: filterList,
+                        roles: roleList,
+                        channels: channelList,
                     });
                 });
             });
