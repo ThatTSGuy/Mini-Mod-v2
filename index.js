@@ -33,7 +33,7 @@ client.on('message', msg => {
             embed.setFooter('Pin\'s Mini-Mod v2', config.embedIcon)
             embed.setColor(0x4287f5);
             msg.channel.send(embed);
-        } else if (command == 'add' && msg.member.roles.cache.forEach(role => { if(role.name == 'Filter Controller') return true })) {
+        } else if (command == 'add' && msg.member.roles.cache.forEach(role => { if(role.name == 'Bot Master') return true })) {
             //Checks to make sure there are arguments present and makes sure the type of filter is on of the four  
             if (['filter', 'role', 'channel'].includes(args[0])) {
                 //Makes sure the type of filter is on of the four    
@@ -84,7 +84,7 @@ client.on('message', msg => {
             } else {
                 msg.channel.send(`Command invalid, correct usage is \`f!add <filter/role/channel> <text or role to filter>\``);
             };
-        } else if (command == 'remove' && msg.member.roles.cache.forEach(role => { if(role.name == 'Filter Controller') return true })) {
+        } else if (command == 'remove' && msg.member.roles.cache.forEach(role => { if(role.name == 'Bot Master') return true })) {
             //Checks to make sure there are arguments present and makes sure the type of filter is on of the four  
             if (['word', 'phrase', 'role', 'channel'].includes(args[0])) {
                 //Makes sure the type of filter is on of the four    
@@ -135,7 +135,7 @@ client.on('message', msg => {
             } else {
                 msg.channel.send(`Command invalid, correct usage is \`f!remove <filter/role/channel> <text or role to filter>\``);
             };
-        } else if (command == 'list' && msg.member.roles.cache.forEach(role => { if(role.name == 'Filter Controller') return true })) {
+        } else if (command == 'list' && msg.member.roles.cache.forEach(role => { if(role.name == 'Bot Master') return true })) {
             db.getFilter(msg.member.guild.id).then(filter => {
                 let filters = '';
                 let roles = '';
@@ -160,7 +160,7 @@ client.on('message', msg => {
 
                 msg.channel.send(embed);
             });
-        } else if (command == 'purge' && msg.member.roles.cache.forEach(role => { if(role.name == 'Filter Controller') return true })) {
+        } else if (command == 'purge' && msg.member.roles.cache.forEach(role => { if(role.name == 'Bot Master') return true })) {
             if (args[0] > 100) {
                 msg.delete();
                 msg.channel.send(`Can't delete more than 100 messages`).then(replyMsg => {
@@ -178,7 +178,7 @@ client.on('message', msg => {
                     });
                 });
             };
-        } else if (command == 'kill' && msg.member.roles.cache.forEach(role => { if(role.name == 'Filter Controller') return true })) {
+        } else if (command == 'kill' && msg.member.roles.cache.forEach(role => { if(role.name == 'Bot Master') return true })) {
             console.log(`USER ${msg.author.tag} KILLED BOT`)
             process.exit(0);
         };
