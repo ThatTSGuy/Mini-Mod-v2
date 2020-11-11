@@ -27,7 +27,7 @@ client.once('ready', () => { console.log('Bot authed into Discord API, bot ready
 
 client.on('message', msg => {
     if (msg.author.bot) return;
-    console.log(`Message: "${msg.content}" from "${msg.author.tag}" sent in channel "${msg.channel.name}" in server "${msg.guild}"`)
+    if (debug.has(msg.author.id)) console.log(`Message: "${msg.content}" from "${msg.author.tag}" sent in channel "${msg.channel.name}" in server "${msg.guild}"`)
     if (msg.content.startsWith(config.prefix)) {
         const args = msg.content.slice(config.prefix.length).trim().split(/ +/);
         const command = args.shift().toLowerCase();
@@ -308,7 +308,7 @@ client.on('message', msg => {
                 hm.setTimestamp(Date.now());
                 hm.setColor(`#fad609`)
             msg.channel.send(hm)
-        } else if (command === `debug`) {
+        } else if (command === `debug` || msg.member.hasPermission('MANAGE_MEMBERS')) {
             if(debug.has(msg.author.id)) {
                 msg.reply("you've left debug mode!")
                 debug.delete(msg.author.id)
@@ -329,7 +329,7 @@ client.on('message', msg => {
             filter.roles.forEach(role => { if (msg.member.roles.cache.has(role.text) && !debug.has(msg.author.id)) filtered = false });
             if (filtered) {
                 msg.delete();
-                console.log(`Message sent by ${msg.member.displayName} deleted in ${msg.channel.name}.\nMessage content:\n${msg.content}`)
+                console.log(`Message sent by ${msg.member.displayName} deleted in ${msg.channel.name}.\nMessage content: "${msg.content}"`)
                 /*
                 const embed = new Discord.MessageEmbed();
                 embed.setDescription(`<@${msg.author.id}>, please don\'t matchmake in this channel!`);
