@@ -162,10 +162,14 @@ client.on('message', msg => {
     } else {
         let filtered = false;
         db.getFilter(msg.member.guild.id).then(filter => {
+            //Checks to see if the users has a exeption role or is in an exeption channel
+            filter.roles.forEach(role => { if (msg.member.roles.cache.has(role.text)) return });
+            filter.channels.forEach(channel => { if (msg.channel.id == channel.text) return });    
+            
             filter.words.forEach(word => { if (msg.content.includes(word.text)) filtered = true });
             filter.phrases.forEach(phrase => { if (msg.content.includes(phrase.text)) filtered = true });
 
-            if (filtered && !msg.member.hasPermission('MANAGE_MESSAGES')) {
+            if (filtered /*&& !msg.member.hasPermission('MANAGE_MESSAGES')*/) {
                 msg.delete();
 
                 const embed = new Discord.MessageEmbed();
