@@ -6,13 +6,12 @@ client.once('ready', () => { console.log('Bot authed into Discord API, bot ready
 
 client.on('message', msg => {
     //console.log(`message: "${msg.content}" from "${msg.author.tag}" in channel "${msg.channel.name}" in server "${msg.guild}"`) Debug stuff (pls no deletey)
+    msg.content = msg.content.toLowerCase();
+    
     if (msg.author.bot) return;
-
-    msg.content.toLowerCase();
-
     if (msg.content.startsWith(config.prefix)) {
         const args = msg.content.slice(config.prefix.length).trim().split(/ +/);
-        const command = args.shift().toLowerCase();
+        const command = args.shift().toLowerCase()
         if (command == 'ping') {
             let apiPing = { 'name': 'API Ping: ', 'value': Date.now() - msg.createdAt + 'ms' };
             let clientPing = { 'name': 'Client Ping: ', 'value': client.ws.ping + 'ms' };
@@ -42,9 +41,9 @@ client.on('message', msg => {
                 let text = args.slice(1).join(' ').trim();
                 if (text == '') {
                     const embed = new Discord.MessageEmbed();
-                            embed.setDescription(`⛔ The ${args[0]} can't be empty`);
-                            embed.setColor(0xff1100);
-                            msg.channel.send(embed);
+                    embed.setDescription(`⛔ The ${args[0]} can't be empty`);
+                    embed.setColor(0xff1100);
+                    msg.channel.send(embed);
                 } else {
                     if (args[0] == 'role') {
                         //Make sure the role is in role-id format not <@&id-here> format and that it is a valid role
@@ -54,7 +53,6 @@ client.on('message', msg => {
                             embed.setDescription(`⛔ The role <@&${text}> is not valid`);
                             embed.setColor(0xff1100);
                             msg.channel.send(embed);
-                            
                             return;
                         };
                     } else if (args[0] == 'channel') {
@@ -64,7 +62,6 @@ client.on('message', msg => {
                             embed.setDescription(`⛔ The channel <#${text}> is not valid`);
                             embed.setColor(0xff1100);
                             msg.channel.send(embed);
-                            
                             return;
                         };
                     };
@@ -88,14 +85,14 @@ client.on('message', msg => {
             };
         } else if (command == 'remove' && msg.member.roles.cache.find(role => role.name == 'Bot Master')) {
             //Checks to make sure there are arguments present and makes sure the type of filter is on of the four  
-            if (['word', 'phrase', 'role', 'channel'].includes(args[0])) {
-                //Makes sure the type of filter is on of the four    
+            if (['filter', 'role', 'channel'].includes(args[0])) {
+                //Makes sure the type of filter is on of the four
                 let text = args.slice(1).join(' ').trim();
                 if (text == '') {
                     const embed = new Discord.MessageEmbed();
-                            embed.setDescription(`⛔ The ${args[0]} can't be empty`);
-                            embed.setColor(0xff1100);
-                            msg.channel.send(embed);
+                    embed.setDescription(`⛔ The ${args[0]} can't be empty`);
+                    embed.setColor(0xff1100);
+                    msg.channel.send(embed);
                 } else {
                     if (args[0] == 'role') {
                         //Make sure the role is in role-id format not <@&id-here> format and that it is a valid role
@@ -105,7 +102,6 @@ client.on('message', msg => {
                             embed.setDescription(`⛔ The role <@&${text}> is not valid`);
                             embed.setColor(0xff1100);
                             msg.channel.send(embed);
-                            
                             return;
                         };
                     } else if (args[0] == 'channel') {
@@ -115,25 +111,23 @@ client.on('message', msg => {
                             embed.setDescription(`⛔ The channel <#${text}> is not valid`);
                             embed.setColor(0xff1100);
                             msg.channel.send(embed);
-                            
                             return;
                         };
                     };
-                
                     db.removeFilter(msg.member.guild.id, args[0], text).then(err => {
-                    if (err) {
-                        const embed = new Discord.MessageEmbed();
-                        embed.setDescription(`⛔ The ${args[0]}, ${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : `"${text}"`} is not in the filter`);
-                        embed.setColor(0xff1100);
-                        msg.channel.send(embed);
-                    } else {
-                        const embed = new Discord.MessageEmbed();
-                        embed.setDescription(`✅ The ${args[0]}, ${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : `"${text}"`} has been removed from the filter`);
-                        embed.setColor(0x00ff1a);
-                        msg.channel.send(embed);
-                    };
-                });
-            };
+                        if (err) {
+                            const embed = new Discord.MessageEmbed();
+                            embed.setDescription(`⛔ The ${args[0]}, ${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : `"${text}"`} is not in the filter`);
+                            embed.setColor(0xff1100);
+                            msg.channel.send(embed);
+                        } else {
+                            const embed = new Discord.MessageEmbed();
+                            embed.setDescription(`✅ The ${args[0]}, ${args[0] == 'role' ? `<@&${text}>` : args[0] == 'channel' ? `<#${text}>` : `"${text}"`} has been removed from the filter`);
+                            embed.setColor(0x00ff1a);
+                            msg.channel.send(embed);
+                        };
+                    });
+                };
             } else {
                 msg.channel.send(`Command invalid, correct usage is \`f!remove <filter/role/channel> <text/role/channel to be filtered>\``);
             };
@@ -154,10 +148,23 @@ client.on('message', msg => {
                 channels = channels == '' ? 'Empty' : channels
 
                 const embed = new Discord.MessageEmbed();
-                embed.setTitle('🔇 Filter/Exeptions List');
+                embed.setTitle(':mute: Filter/Exeptions List :mute:');
                 embed.addField('Text Filters:', filters);
                 embed.addField('Role Exeptions:', roles);
                 embed.addField('Channel Exeptions:', channels);
+                embed.setColor(0x4a54ed);
+
+                msg.channel.send(embed);
+            });
+        } else if (command == 'settings' && msg.member.roles.cache.find(role => role.name == 'Bot Master')) {
+            db.getSettings(msg.member.guild.id).then(list => {
+                let settings = '';
+
+                list.forEach(name => settings += `\n${name.setting}: ${name.value}`);
+
+                const embed = new Discord.MessageEmbed();
+                embed.setTitle(':gear: Settings List :gear:');
+                embed.setDescription(settings);
                 embed.setColor(0x4a54ed);
 
                 msg.channel.send(embed);
@@ -189,10 +196,10 @@ client.on('message', msg => {
         db.getFilter(msg.member.guild.id).then(filter => {
             //Checks if text from the message is in the filter, if so, remove it
             filter.filters.forEach(filter => { if (msg.content.includes(filter.text)) filtered = true });
-            
+
             //Checks to see if the users has a exeption role or is in an exeption channel    
             filter.roles.forEach(role => { if (msg.member.roles.cache.has(role.text)) filtered = false });
-            filter.channels.forEach(channel => { if (msg.channel.id == channel.text) filtered = false });   
+            filter.channels.forEach(channel => { if (msg.channel.id == channel.text) filtered = false });
 
             //If message should be filtered, remove it and send moderation message
             if (filtered) {

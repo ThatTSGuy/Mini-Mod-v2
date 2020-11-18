@@ -55,3 +55,22 @@ module.exports.removeFilter = (guildId, type, text) => {
         });
     })
 };
+
+module.exports.settings = (guildId, setting, value) => {
+    return new Promise((res, rej) => {
+        settings = client.db(guildId).collection('settings');
+        settings.updateOne({ 'setting': setting }, { $set: { 'value': value } }, (err, result) => {
+            res(err);
+        });
+    })
+};
+
+module.exports.getSettings = guildId => {
+    return new Promise((res, rej) => {
+        settings = client.db(guildId).collection('settings');
+        settings.find({}).toArray(function (err, settingsList) {
+            if (err) throw err;
+            res(settingsList);
+        });
+    })
+};
