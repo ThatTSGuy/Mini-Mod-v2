@@ -1,13 +1,16 @@
 const db = require('./dbdriver');
+const pingGraph = require('./ping');
 const config = require('./config.json');
+const fs = require('fs');
 const Discord = require('discord.js');
+const { emitKeypressEvents } = require('readline');
 const client = new Discord.Client;
 client.once('ready', () => { console.log('Bot authed into Discord API, bot ready') });
 
 client.on('message', msg => {
     //console.log(`message: "${msg.content}" from "${msg.author.tag}" in channel "${msg.channel.name}" in server "${msg.guild}"`) Debug stuff (pls no deletey)
     msg.content = msg.content.toLowerCase();
-    
+
     if (msg.author.bot) return;
     if (msg.content.startsWith(config.prefix)) {
         const args = msg.content.slice(config.prefix.length).trim().split(/ +/);
@@ -16,12 +19,18 @@ client.on('message', msg => {
             let apiPing = { 'name': 'API Ping: ', 'value': Date.now() - msg.createdAt + 'ms' };
             let clientPing = { 'name': 'Client Ping: ', 'value': client.ws.ping + 'ms' };
 
-            let embed = new Discord.MessageEmbed();
-            embed.setTitle('Pong! :ping_pong:');
-            embed.addFields([apiPing, clientPing])
-            embed.setColor(0x4287f5);
+            pingGraph.newGraph(pingData).then(fileName => {
+                let attachment = new Discord.MessageAttachment('./' + fileName, fileName); 
+                
+                let embed = new Discord.MessageEmbed();
+                embed.setTitle('Pong! :ping_pong:');
+                embed.addFields([apiPing, clientPing])
+                embed.attachFiles(attachment);
+                embed.setImage('attachment://' + fileName);
+                embed.setColor(0x4287f5);
 
-            msg.channel.send(embed);
+                msg.channel.send(embed);
+            });
         } else if (command == 'help' && msg.member.roles.cache.find(role => role.name == 'Bot Master')) {
             let embed = new Discord.MessageEmbed();
             embed.setTitle('📰 List of Commands');
@@ -220,5 +229,15 @@ client.on('message', msg => {
         });
     };
 });
+
+pingData = {
+    x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+    y: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+};
+
+setInterval(() => {
+    pingData.y.pop();
+    pingData.y.unshift(client.ws.ping);
+}, 60000);
 
 client.login(config.token);
